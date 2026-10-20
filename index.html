@@ -163,6 +163,10 @@ tr:last-child td{border-bottom:0}
 @keyframes pop{from{transform:scale(.85);opacity:.3}to{transform:scale(1);opacity:1}}
 .goal.met,.goal.miss{animation:pop .4s ease both}
 .rule{background:var(--brass-soft);border:1px solid var(--brass);border-radius:12px;padding:12px 16px;font-size:16px}
+.key{margin:0;display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.key div{display:flex;gap:8px}
+.key dt{font-weight:700;color:var(--ink);min-width:72px}
+.key dd{margin:0}
 </style>
 
 <header class="top"><div class="top-in"><div class="brand"><span class="ball">⚽</span>Bonus Lab</div><span class="label">Team Plan</span></div></header>
@@ -213,6 +217,13 @@ tr:last-child td{border-bottom:0}
   <section>
     <div class="step"><b>Step 3</b><h2>Show this to your teacher</h2></div>
     <div class="plancard" id="plancard"></div>
+    <dl class="key">
+      <div><dt>Equal</dt><dd>Equal share. Everyone gets the same amount.</dd></div>
+      <div><dt>Upsell</dt><dd>Upsell sales. Money from room upgrades, late checkout and packages you sold.</dd></div>
+      <div><dt>Reviews</dt><dd>Guest reviews. How many times guests wrote your name in a review.</dd></div>
+      <div><dt>Fixed</dt><dd>Fixed complaints. How many guest problems you solved.</dd></div>
+      <div><dt>Teammate</dt><dd>Teammate votes. How many coworkers voted for you as “most helpful.”</dd></div>
+    </dl>
   </section>
 </main>
 </div>
