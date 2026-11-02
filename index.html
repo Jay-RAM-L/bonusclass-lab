@@ -1,12 +1,10 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style>
-</head><body>
 <title>Bonus Lab Team Plan</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
-<style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}
+
 /* Layout: hotel lobby board — one column, scoreboard tiles for goals, name-badge cards for staff */
 :root{
   --bg:#F3F5F1; --surface:#FFFFFF; --ink:#13201A; --muted:#5B6A62; --line:#DCE3DD;
@@ -167,33 +165,93 @@ tr:last-child td{border-bottom:0}
 .key div{display:flex;gap:8px}
 .key dt{font-weight:700;color:var(--ink);min-width:72px}
 .key dd{margin:0}
-</style>
 
+/* class screen */
+.timer{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.clock{font-family:var(--display);font-weight:800;font-size:clamp(40px,7vw,60px);min-width:4ch}
+.clock.low{color:var(--bad)}
+.example{background:var(--brass-soft);color:var(--ink);border-radius:10px;padding:10px 14px;font-size:14px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+td.l,th.l{text-align:left}
+tr:last-child td{border-bottom:0}
+.plans input[type=number]{width:62px;padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:600 15px var(--body);text-align:center}
+.plans select{padding:6px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:600 14px var(--body)}
+.tot-ok{color:var(--good);font-weight:700}.tot-no{color:var(--bad);font-weight:700}
+.pay td.cell{font-weight:700}
+.pay tr.hl td{background:var(--brass-soft)}
+.pay tr.pool td{font-family:var(--display);font-weight:800;border-top:2px solid var(--ink)}
+.pending{padding:28px;text-align:center;color:var(--muted)}
+.votes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:640px){.votes{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.vote{background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.vote.win{border-color:var(--brass);background:var(--brass-soft)}
+.vote .vc{font-family:var(--display);font-weight:800;font-size:40px;line-height:1}
+.vote .row{display:flex;gap:8px}
+.vote button{width:44px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:800 20px var(--display);cursor:pointer}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:640px){.facts{grid-template-columns:1fr}}
+.fact .big{font-family:var(--display);font-weight:800;font-size:34px}
+.row-btns{display:flex;gap:8px;flex-wrap:wrap}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@keyframes pop{from{transform:scale(.85);opacity:.3}to{transform:scale(1);opacity:1}}
+.goal.met,.goal.miss{animation:pop .4s ease both}
+.join{display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;align-items:center}
+.join .jtxt{display:flex;flex-direction:column;gap:10px;align-items:flex-start;min-width:0}
+.qr{background:#fff;border-radius:12px;padding:10px;max-width:100%}
+.qr svg{display:block;width:100%;height:auto}
+@media (max-width:560px){.join{grid-template-columns:1fr}.join .qr{max-width:240px}}
+.qrfull{position:fixed;inset:0;z-index:20;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.qrfull .qr{width:min(78vh,90vw)}
+.qrfull p{font-family:var(--display);font-weight:800;font-size:28px}
+.win-banner{background:var(--pitch);color:var(--surface);border-radius:14px;padding:16px 20px;font-family:var(--display);font-weight:800;font-size:clamp(20px,3.5vw,28px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .win-banner{color:var(--bg)}}
+:root[data-theme="dark"] .win-banner{color:var(--bg)}
+.assign{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.assign span{background:var(--brass-soft);border-radius:10px;padding:8px 12px;font-size:17px;font-weight:600}
+.assign b{font-family:var(--display);color:var(--brass);margin-right:6px}
+@media (max-width:560px){.assign{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.rules{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:17px;max-width:62ch}
+.example p{font-size:17px}
+.pts{display:flex;flex-direction:column;gap:4px;padding:4px 14px 12px;margin-top:auto}
+.pts div{display:grid;grid-template-columns:76px 1fr 18px;align-items:center;gap:8px;font-size:14px}
+.pts .k{color:var(--muted)} .pts .d{color:var(--pitch);letter-spacing:3px} .pts b{text-align:right}
+.btn.big{font-size:18px;padding:14px 22px;align-self:flex-start}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.sendmsg{font-weight:600;min-height:1.5em} .sendmsg.ok{color:var(--good)} .sendmsg.no{color:var(--bad)}
+.livebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pill{padding:6px 12px;border-radius:999px;background:var(--line);font-weight:700;font-size:14px}
+.pill.on{background:var(--pitch-soft);color:var(--good)} .pill.off{background:var(--bad-soft);color:var(--bad)}
+</style>
+</head><body>
 <header class="top"><div class="top-in"><div class="brand"><span class="ball">⚽</span>Bonus Lab</div><span class="label">Team Plan</span></div></header>
 <div class="wrap">
-<!-- ============ TEAM PLAN (student phones) ============ -->
-<main id="view-team" style="display:flex;flex-direction:column;gap:28px;padding-top:24px">
+<main style="display:flex;flex-direction:column;gap:28px;padding-top:24px">
   <div class="story">
-    <span class="label" style="color:inherit;opacity:.8">Hotel Aurelia · 300 rooms · 5-star</span>
-    <h1>The World Cup is in town.</h1>
-    <p>Your luxury hotel is full for one month. There are 9 front desk agents. If the team hits its goals, the General Manager gives a team bonus of</p>
+    <span class="label" style="color:inherit;opacity:.8">Hotel Aurelia · luxury 5-star · World Cup month</span>
+    <h1>Your team did it!</h1>
+    <p>The World Cup month is over. Your 6 front desk agents hit every goal the GM set. The GM gives the team a bonus of</p>
     <div class="money num">$10,000</div>
-    <p>You are the managers. Before the month starts, you must tell your team how the bonus will be split.</p>
+    <p>You are the managers. How will you split it?</p>
   </div>
 
   <section>
-    <h2>Team goals for the month</h2>
-    <div class="board">
-      <div class="goal"><span class="label">Guest reviews</span><span class="target num">70%+</span><span class="what">of guests rate front desk service 9 or 10 out of 10</span></div>
-      <div class="goal"><span class="label">Upsell sales</span><span class="target num">$70,000+</span><span class="what">room upgrades, late checkout and packages sold at the desk</span></div>
-      <div class="goal"><span class="label">Service recovery</span><span class="target num">60%+</span><span class="what">of guests who complained say “you fixed it well”</span></div>
-    </div>
-    <div class="rule"><strong>The GM’s rule: all or nothing.</strong> Hit all 3 goals → the team gets $10,000. Miss even one → $0.</div>
+    <h2>The bonus rule</h2>
+    <ol class="rules">
+      <li><strong>Split the $10,000 into 4 pots:</strong> Equal, Sales, Service, Teamwork. The 4 numbers must add up to 100%.</li>
+      <li><strong>The Equal pot</strong> is shared equally by all 6 agents.</li>
+      <li><strong>Every other pot has 10 points in total.</strong> 1 point = 1/10 of that pot.</li>
+    </ol>
+    <div class="card example"><span class="label">Example</span>
+      <p>Sales pot = 40% = <strong>$4,000</strong>. 1 Sales point = <strong>$400</strong>. Jordan has 4 Sales points → <strong>$1,600</strong>.</p></div>
   </section>
 
   <section>
-    <h2>Meet your team</h2>
-    <p class="hint">These are each agent’s results from <strong>last month</strong>, before the World Cup.</p>
+    <h2>Your team</h2>
+    <p class="hint">Points for each agent. Each column adds up to 10.</p>
     <div class="team" id="team"></div>
   </section>
 
@@ -203,100 +261,94 @@ tr:last-child td{border-bottom:0}
   </section>
 
   <section>
-    <div class="step"><b>Step 2</b><h2>How do we split the $10,000?</h2></div>
-    <p class="hint">Move the sliders. The total must be exactly 100%.</p>
+    <div class="step"><b>Step 2</b><h2>Set your 4 pots</h2></div>
     <div class="card sliders" id="sliders"></div>
     <div class="total" id="total"></div>
-    <dl class="key">
-      <div><dt>Equal</dt><dd>Everyone gets the same amount.</dd></div>
-      <div><dt>Upsell</dt><dd>Money from room upgrades, late checkout and packages you sold.</dd></div>
-      <div><dt>Reviews</dt><dd>Guest mentioned your name.</dd></div>
-      <div><dt>Fixed</dt><dd>How many service recoveries you did.</dd></div>
-      <div><dt>Teammate</dt><dd>Teammate votes. How many coworkers voted for you as “most helpful.”</dd></div>
-    </dl>
   </section>
 
   <section>
-    <div class="step"><b>Preview</b><h2>If this month looks like last month…</h2></div>
+    <div class="step"><b>Preview</b><h2>Who gets what</h2></div>
     <div class="card bars" id="bars"></div>
   </section>
 
   <section>
-    <div class="step"><b>Step 3</b><h2>Show this to your teacher</h2></div>
-    <div class="plancard" id="plancard"></div>
+    <div class="step"><b>Step 3</b><h2>Send your plan</h2></div>
+    <button class="btn primary big" id="send">Send Group 1’s plan</button>
+    <p class="sendmsg" id="sendmsg" role="status"></p>
   </section>
 </main>
 </div>
 <script>
-const AGENTS=[
- {n:"Jordan",up:11000,rv:2,fx:1,tm:0,note:"Top seller. One guest said he pushed upgrades too hard."},
- {n:"Mina",up:3000,rv:6,fx:5,tm:4,note:"Fixed the most complaints. Covers breaks for busy teammates."},
- {n:"Sam",up:6000,rv:9,fx:2,tm:2,note:"Guests love him. Most name mentions in reviews."},
- {n:"Priya",up:8000,rv:3,fx:1,tm:1,note:"Strong seller. Quiet and steady."},
- {n:"Leo",up:4000,rv:3,fx:4,tm:3,note:"Takes the hardest complaints."},
- {n:"Ava",up:7000,rv:5,fx:3,tm:2,note:"Good at everything. Never misses a shift."},
- {n:"Chris",up:6000,rv:1,fx:1,tm:0,note:"Okay sales. Often on his phone when it is slow."},
- {n:"Noah",up:2000,rv:0,fx:0,tm:0,note:"New hire. Still learning the system."},
- {n:"Emma",up:3000,rv:6,fx:3,tm:4,note:"Warm with guests. Trains Noah every shift."}
-];
-const SUM={up:0,rv:0,fx:0,tm:0}; AGENTS.forEach(a=>{for(const k in SUM)SUM[k]+=a[k]});
+const TOPIC="bonuslab-1412340223b5";
+const NTFY="https://ntfy.sh/"+TOPIC;
 const POOL=10000;
-const TARGET={review:70,upsell:70000,recovery:60};
-const SL=[
- {k:"eq",t:"Equal share",d:"Everyone gets the same."},
- {k:"up",t:"Upsell sales",d:"More sales, more money."},
- {k:"rv",t:"Guest reviews",d:"Guests wrote your name in a review."},
- {k:"fx",t:"Fixed complaints",d:"Guest problems you solved."},
- {k:"tm",t:"Teammate votes",d:"Coworkers vote for who helped them most."}
+const AGENTS=[
+ {n:"Jordan",s:4,v:1,t:0,note:"Top seller. Pushes upgrades hard."},
+ {n:"Mina",s:1,v:3,t:4,note:"Fixes complaints. Helps everyone."},
+ {n:"Sam",s:1,v:3,t:2,note:"Guests love him."},
+ {n:"Leo",s:1,v:2,t:3,note:"Takes the hard complaints."},
+ {n:"Chris",s:2,v:0,t:0,note:"Okay sales. Often on his phone."},
+ {n:"Noah",s:1,v:1,t:1,note:"New hire. Still learning."}
+];
+const POTS=[
+ {k:"eq",t:"Equal",d:"Everyone gets the same amount."},
+ {k:"s",t:"Sales",d:"Room upgrades, late checkout and packages sold."},
+ {k:"v",t:"Service",d:"Guests named you in a review, or you fixed their complaint."},
+ {k:"t",t:"Teamwork",d:"Coworkers voted you “most helpful.”"}
 ];
 const fmt=n=>"$"+Math.round(n).toLocaleString("en-US");
+const totalW=w=>POTS.reduce((a,p)=>a+(+w[p.k]||0),0);
+/* The rule: Equal pot ÷ 6. Every other pot has 10 points, so 1 point = 1/10 of that pot. */
+const payouts=w=>AGENTS.map(a=>POOL*((+w.eq||0)/100/AGENTS.length+(+w.s||0)/100*a.s/10+(+w.v||0)/100*a.v/10+(+w.t||0)/100*a.t/10));
 const store={get(k,f){try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch(e){return f}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-
-function totalW(w){return SL.reduce((s,x)=>s+(+w[x.k]||0),0)}
-function payouts(w,pool){
-  return AGENTS.map(a=>pool*((+w.eq||0)/100/AGENTS.length+(+w.up||0)/100*a.up/SUM.up+(+w.rv||0)/100*a.rv/SUM.rv+(+w.fx||0)/100*a.fx/SUM.fx+(+w.tm||0)/100*a.tm/SUM.tm));
-}
-
+const dots=n=>"●".repeat(n)+"○".repeat(5-n);
 
 document.getElementById("team").innerHTML=AGENTS.map(a=>`
  <div class="badge"><div class="clip"></div>
-  <div class="head"><div class="av">${a.n[0]}</div><div><div class="name">${a.n}</div><div class="role">Front Desk Agent</div></div></div>
-  <p class="note">${a.note}</p>
-  <div class="stats num">
-   <div><div class="v">$${(a.up/1000)}k</div><div class="k">Upsell</div></div>
-   <div><div class="v">${a.rv}</div><div class="k">Name in reviews</div></div>
-   <div><div class="v">${a.fx}</div><div class="k">Fixed</div></div>
-   <div><div class="v">${a.tm}</div><div class="k">Teammate votes</div></div>
+  <div class="head"><div class="av">${a.n[0]}</div><div><div class="name">${a.n}</div><div class="role">${a.note}</div></div></div>
+  <div class="pts">
+   <div><span class="k">Sales</span><span class="d">${dots(a.s)}</span><b class="num">${a.s}</b></div>
+   <div><span class="k">Service</span><span class="d">${dots(a.v)}</span><b class="num">${a.v}</b></div>
+   <div><span class="k">Teamwork</span><span class="d">${dots(a.t)}</span><b class="num">${a.t}</b></div>
   </div></div>`).join("");
 
-let my=store.get("bonuslab.my2",{g:1,w:{eq:100,up:0,rv:0,fx:0,tm:0}});
+let my=store.get("bonuslab.v2.my",{g:1,w:{eq:40,s:20,v:20,t:20}});
 const grp=document.getElementById("grp");
 grp.innerHTML=[1,2,3,4,5,6].map(g=>`<button aria-pressed="${my.g===g}" data-g="${g}">${g}</button>`).join("");
-grp.onclick=e=>{const b=e.target.closest("button");if(!b)return;my.g=+b.dataset.g;grp.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));renderMy()};
+grp.onclick=e=>{const b=e.target.closest("button");if(!b)return;my.g=+b.dataset.g;grp.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));render()};
 
+document.getElementById("sliders").innerHTML=POTS.map(p=>`
+ <div class="sl"><label for="s-${p.k}">${p.t}</label><output id="o-${p.k}" class="num">${my.w[p.k]}%</output>
+  <small>${p.d}</small>
+  <input type="range" id="s-${p.k}" min="0" max="100" step="10" value="${my.w[p.k]}" data-k="${p.k}"></div>`).join("");
+document.getElementById("sliders").oninput=e=>{const k=e.target.dataset.k;if(!k)return;my.w[k]=+e.target.value;document.getElementById("o-"+k).textContent=my.w[k]+"%";render()};
 
-document.getElementById("sliders").innerHTML=SL.map(s=>`
- <div class="sl"><label for="s-${s.k}">${s.t}</label><output id="o-${s.k}" class="num">${my.w[s.k]}%</output>
-  <small>${s.d}</small>
-  <input type="range" id="s-${s.k}" min="0" max="100" step="5" value="${my.w[s.k]}" data-k="${s.k}"></div>`).join("");
-document.getElementById("sliders").oninput=e=>{const k=e.target.dataset.k;if(!k)return;my.w[k]=+e.target.value;document.getElementById("o-"+k).textContent=my.w[k]+"%";renderMy()};
-
-function renderMy(){
-  store.set("bonuslab.my2",my);
-  const t=totalW(my.w), ok=t===100;
+function render(){
+  store.set("bonuslab.v2.my",my);
+  const t=totalW(my.w),ok=t===100;
   const tot=document.getElementById("total");
   tot.className="total "+(ok?"ok":"no");
   tot.innerHTML=`<span>${ok?"Ready! Total is 100%.":t<100?`Add ${100-t}% more.`:`Take away ${t-100}%.`}</span><span class="big num">${t}%</span>`;
-  const p=ok?payouts(my.w,POOL):AGENTS.map(()=>0), mx=Math.max(1,...p);
-  document.getElementById("bars").innerHTML=ok?AGENTS.map((a,i)=>`
-   <div class="bar"><span class="who">${a.n}</span><div class="track"><div class="fill" style="width:${p[i]/mx*100}%"></div></div><span class="amt num">${fmt(p[i])}</span></div>`).join("")
-   :`<p class="hint">Make the total 100% to see who gets what.</p>`;
-  const parts=SL.filter(s=>my.w[s.k]>0).map(s=>`${s.t} ${my.w[s.k]}%`).join(" · ");
-  document.getElementById("plancard").innerHTML=`<span class="label">Our plan</span><span class="g">Group ${my.g}</span>
-   <span class="line"><strong>How we split:</strong> ${ok?parts:"<em>not finished — total must be 100%</em>"}</span>`;
+  const p=ok?payouts(my.w):AGENTS.map(()=>0),mx=Math.max(1,...p);
+  document.getElementById("bars").innerHTML=ok?AGENTS.map((a,i)=>`<div class="bar"><span class="who">${a.n}</span><div class="track"><div class="fill" style="width:${p[i]/mx*100}%"></div></div><span class="amt num">${fmt(p[i])}</span></div>`).join("")
+    :`<p class="hint">Make the total 100% to see who gets what.</p>`;
+  const b=document.getElementById("send");b.disabled=!ok;b.textContent=`Send Group ${my.g}’s plan`;
 }
-renderMy();
+render();
 
+document.getElementById("send").onclick=async()=>{
+  const b=document.getElementById("send"),m=document.getElementById("sendmsg");
+  if(totalW(my.w)!==100)return;
+  b.disabled=true;m.className="sendmsg";m.textContent="Sending…";
+  try{
+    const r=await fetch(NTFY,{method:"POST",body:JSON.stringify({g:my.g,w:my.w})});
+    if(!r.ok)throw new Error(r.status);
+    m.className="sendmsg ok";m.textContent=`Sent! Group ${my.g}’s plan is on the class screen. You can change it and send again.`;
+  }catch(e){
+    m.className="sendmsg no";m.textContent="Could not send. Show this screen to your teacher instead.";
+  }
+  b.disabled=false;
+};
 </script>
 
 </body></html>
