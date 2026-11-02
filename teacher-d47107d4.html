@@ -216,6 +216,7 @@ tr:last-child td{border-bottom:0}
 
 .rules{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:17px;max-width:62ch}
 .example p{font-size:17px}
+.key.big{font-size:16px;color:var(--ink);gap:8px}.key.big dt{min-width:90px}
 .howto{display:flex;flex-direction:column;gap:8px}.howto p{font-size:17px;max-width:62ch}
 .pts{display:flex;flex-direction:column;gap:4px;padding:4px 14px 12px;margin-top:auto}
 .pts div{display:grid;grid-template-columns:76px 1fr 64px;align-items:center;gap:8px;font-size:14px}
@@ -295,10 +296,10 @@ const AGENTS=[
 ];
 const POTS=[
  {k:"eq",t:"Equal",d:"Everyone gets the same amount."},
- {k:"up",t:"Upsell",d:"Money from room upgrades, late checkout and packages you sold."},
- {k:"rv",t:"Reviews",d:"Guest mentioned your name."},
- {k:"fx",t:"Fixed",d:"How many service recoveries you did."},
- {k:"tm",t:"Teammate",d:"Teammate votes. How many coworkers voted for you as “most helpful.”"}
+ {k:"up",t:"Upsell",d:"Upgrade amount the agent sold."},
+ {k:"rv",t:"Reviews",d:"Guests mentioned the agent’s name in a review."},
+ {k:"fx",t:"Fixed",d:"Service recovery performance."},
+ {k:"tm",t:"Teammate",d:"Every agent voted for 2 teammates. No one could vote for themselves."}
 ];
 const SCORED=["up","rv","fx","tm"];
 const TOTAL=Object.fromEntries(SCORED.map(k=>[k,AGENTS.reduce((t,a)=>t+a[k],0)]));

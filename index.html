@@ -216,6 +216,7 @@ tr:last-child td{border-bottom:0}
 
 .rules{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:17px;max-width:62ch}
 .example p{font-size:17px}
+.key.big{font-size:16px;color:var(--ink);gap:8px}.key.big dt{min-width:90px}
 .howto{display:flex;flex-direction:column;gap:8px}.howto p{font-size:17px;max-width:62ch}
 .pts{display:flex;flex-direction:column;gap:4px;padding:4px 14px 12px;margin-top:auto}
 .pts div{display:grid;grid-template-columns:76px 1fr 64px;align-items:center;gap:8px;font-size:14px}
@@ -248,14 +249,14 @@ tr:last-child td{border-bottom:0}
   </section>
 
   <section>
-    <h2>Your team</h2>
-    <p class="hint">This month’s results. <strong>Team totals:</strong> Upsell $52,000 · Reviews 60 · Fixed 50 · Teammate 12 votes (each agent voted twice and could not vote for themselves).</p>
-    <div class="team" id="team"></div>
+    <h2>What the 4 numbers mean</h2>
+    <dl class="key big" id="key"></dl>
   </section>
 
   <section>
-    <h2>What each pot means</h2>
-    <dl class="key" id="key"></dl>
+    <h2>Your team</h2>
+    <p class="hint">This month’s results. <strong>Team totals:</strong> Upsell $52,000 · Reviews 60 · Fixed 50 · Teammate 12 votes.</p>
+    <div class="team" id="team"></div>
   </section>
 
   <section>
@@ -295,10 +296,10 @@ const AGENTS=[
 ];
 const POTS=[
  {k:"eq",t:"Equal",d:"Everyone gets the same amount."},
- {k:"up",t:"Upsell",d:"Money from room upgrades, late checkout and packages you sold."},
- {k:"rv",t:"Reviews",d:"Guest mentioned your name."},
- {k:"fx",t:"Fixed",d:"How many service recoveries you did."},
- {k:"tm",t:"Teammate",d:"Teammate votes. How many coworkers voted for you as “most helpful.”"}
+ {k:"up",t:"Upsell",d:"Upgrade amount the agent sold."},
+ {k:"rv",t:"Reviews",d:"Guests mentioned the agent’s name in a review."},
+ {k:"fx",t:"Fixed",d:"Service recovery performance."},
+ {k:"tm",t:"Teammate",d:"Every agent voted for 2 teammates. No one could vote for themselves."}
 ];
 const SCORED=["up","rv","fx","tm"];
 const TOTAL=Object.fromEntries(SCORED.map(k=>[k,AGENTS.reduce((t,a)=>t+a[k],0)]));
@@ -326,11 +327,10 @@ grp.onclick=e=>{const b=e.target.closest("button");if(!b)return;my.g=+b.dataset.
 
 document.getElementById("sliders").innerHTML=POTS.map(p=>`
  <div class="sl"><label for="s-${p.k}">${p.t}</label><output id="o-${p.k}" class="num">${my.w[p.k]}%</output>
-  <small>${p.d}</small>
   <input type="range" id="s-${p.k}" min="0" max="100" step="10" value="${my.w[p.k]}" data-k="${p.k}"></div>`).join("");
 document.getElementById("sliders").oninput=e=>{const k=e.target.dataset.k;if(!k)return;my.w[k]=+e.target.value;document.getElementById("o-"+k).textContent=my.w[k]+"%";render()};
 
-document.getElementById("key").innerHTML=POTS.map(p=>`<div><dt>${p.t}</dt><dd>${p.d}</dd></div>`).join("");
+document.getElementById("key").innerHTML=POTS.filter(p=>p.k!=="eq").map(p=>`<div><dt>${p.t}</dt><dd>${p.d}</dd></div>`).join("");
 function render(){
   store.set("bonuslab.v3.my",my);
   const t=totalW(my.w),ok=t===100;
