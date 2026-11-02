@@ -243,17 +243,15 @@ tr:last-child td{border-bottom:0}
     <ol class="rules">
       <li><strong>Split the $10,000 into 5 pots:</strong> Equal, Upsell, Reviews, Fixed, Teammate. The 5 numbers must add up to 100%.</li>
       <li><strong>The Equal pot</strong> is shared equally by all 6 agents.</li>
-      <li><strong>The Upsell pot</strong> is shared by sales: your share = what you sold ÷ $52,000.</li>
-      <li><strong>Reviews and Fixed pots</strong> have 10 points each. 1 point = 1/10 of that pot.</li>
-      <li><strong>The Teammate pot</strong> has 12 votes. Each agent voted twice and could not vote for themselves (6 × 2 = 12). 1 vote = 1/12 of that pot.</li>
+      <li><strong>The other 4 pots</strong> (Upsell, Reviews, Fixed, Teammate) are shared by each agent’s part of the team total: your share = your number ÷ the team total.</li>
     </ol>
     <div class="card example"><span class="label">Example</span>
-      <p>Reviews pot = 20% = <strong>$2,000</strong>. 1 point = $200. Sam has 5 points → <strong>$1,000</strong>.</p></div>
+      <p>Reviews pot = 20% = <strong>$2,000</strong>. Sam has 24 of the team’s 60 reviews (40%) → <strong>$800</strong>.</p></div>
   </section>
 
   <section>
     <h2>Your team</h2>
-    <p class="hint"><strong>Upsell</strong> is how much each agent sold (team total $52,000). <strong>Reviews</strong> and <strong>Fixed</strong> are counts that add up to 10. <strong>Teammate</strong> votes add up to 12.</p>
+    <p class="hint">This month’s results. <strong>Team totals:</strong> Upsell $52,000 · Reviews 60 · Fixed 50 · Teammate 12 votes (each agent voted twice and could not vote for themselves).</p>
     <div class="team" id="team"></div>
   </section>
 
@@ -290,14 +288,13 @@ const TOPIC="bonuslab-1412340223b5";
 const NTFY="https://ntfy.sh/"+TOPIC;
 const POOL=10000;
 const AGENTS=[
- {n:"Jordan",usd:16400,rv:1,fx:0,tm:1,note:"Top seller. Pushes upgrades hard."},
- {n:"Mina",usd:5200,rv:2,fx:4,tm:5,note:"Fixes complaints. Helps everyone."},
- {n:"Sam",usd:7600,rv:5,fx:1,tm:2,note:"Guests love him."},
- {n:"Leo",usd:6300,rv:1,fx:4,tm:3,note:"Takes the hard complaints."},
- {n:"Chris",usd:11800,rv:0,fx:0,tm:0,note:"Sells well. Often on his phone."},
- {n:"Noah",usd:4700,rv:1,fx:1,tm:1,note:"New hire. Still learning."}
+ {n:"Jordan",up:16400,rv:6,fx:2,tm:1,note:"Top seller. Pushes upgrades hard."},
+ {n:"Mina",up:5200,rv:12,fx:20,tm:5,note:"Fixes complaints. Helps everyone."},
+ {n:"Sam",up:7600,rv:24,fx:6,tm:2,note:"Guests love him."},
+ {n:"Leo",up:6300,rv:9,fx:16,tm:3,note:"Takes the hard complaints."},
+ {n:"Chris",up:11800,rv:3,fx:1,tm:0,note:"Sells well. Often on his phone."},
+ {n:"Noah",up:4700,rv:6,fx:5,tm:1,note:"New hire. Still learning."}
 ];
-const UPSELL_TOTAL=AGENTS.reduce((t,a)=>t+a.usd,0);
 const POTS=[
  {k:"eq",t:"Equal",d:"Everyone gets the same amount."},
  {k:"up",t:"Upsell",d:"Money from room upgrades, late checkout and packages you sold."},
@@ -305,21 +302,23 @@ const POTS=[
  {k:"fx",t:"Fixed",d:"How many service recoveries you did."},
  {k:"tm",t:"Teammate",d:"Teammate votes. How many coworkers voted for you as “most helpful.”"}
 ];
-const SCORED=["rv","fx","tm"];
-const PTS={rv:10,fx:10,tm:12};
+const SCORED=["up","rv","fx","tm"];
+const TOTAL=Object.fromEntries(SCORED.map(k=>[k,AGENTS.reduce((t,a)=>t+a[k],0)]));
+const MAX=Object.fromEntries(SCORED.map(k=>[k,Math.max(...AGENTS.map(a=>a[k]))]));
 const fmt=n=>"$"+Math.round(n).toLocaleString("en-US");
 const totalW=w=>POTS.reduce((a,p)=>a+(+w[p.k]||0),0);
-/* The rule: Equal pot ÷ 6. Upsell pot by share of team sales. Reviews/Fixed pots have 10 points: 1 point = 1/10. Teammate pot has 12 votes: 1 vote = 1/12. */
-const payouts=w=>AGENTS.map(a=>POOL*((+w.eq||0)/100/AGENTS.length+(+w.up||0)/100*a.usd/UPSELL_TOTAL+SCORED.reduce((t,k)=>t+(+w[k]||0)/100*a[k]/PTS[k],0)));
+/* The rule: Equal pot ÷ 6. Every other pot is shared by each agent's share of the team total. */
+const payouts=w=>AGENTS.map(a=>POOL*((+w.eq||0)/100/AGENTS.length+SCORED.reduce((t,k)=>t+(+w[k]||0)/100*a[k]/TOTAL[k],0)));
 const store={get(k,f){try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch(e){return f}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const dots=n=>"●".repeat(n)+"○".repeat(5-n);
+const dotsFor=(k,v)=>dots(v>0?Math.max(1,Math.round(v/MAX[k]*5)):0);
+const show=(k,v)=>k==="up"?fmt(v):String(v);
 
 document.getElementById("team").innerHTML=AGENTS.map(a=>`
  <div class="badge"><div class="clip"></div>
   <div class="head"><div class="av">${a.n[0]}</div><div><div class="name">${a.n}</div><div class="role">${a.note}</div></div></div>
   <div class="pts">
-   <div><span class="k">Upsell</span><span class="d">${dots(Math.min(5,Math.round(a.usd/3200)))}</span><b class="num">${fmt(a.usd)}</b></div>
-   ${SCORED.map(k=>{const p=POTS.find(x=>x.k===k);return `<div><span class="k">${p.t}</span><span class="d">${dots(a[k])}</span><b class="num">${a[k]}</b></div>`}).join("")}
+   ${SCORED.map(k=>{const p=POTS.find(x=>x.k===k);return `<div><span class="k">${p.t}</span><span class="d">${dotsFor(k,a[k])}</span><b class="num">${show(k,a[k])}</b></div>`}).join("")}
   </div></div>`).join("");
 
 let my=store.get("bonuslab.v3.my",{g:1,w:{eq:40,up:20,rv:10,fx:20,tm:10}});
