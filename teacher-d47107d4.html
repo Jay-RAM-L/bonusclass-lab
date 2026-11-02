@@ -285,10 +285,10 @@ const TOPIC="bonuslab-1412340223b5";
 const NTFY="https://ntfy.sh/"+TOPIC;
 const POOL=10000;
 const AGENTS=[
- {n:"Jordan",usd:16400,rv:1,fx:0,tm:0,note:"Top seller. Pushes upgrades hard."},
+ {n:"Jordan",usd:16400,rv:1,fx:0,tm:1,note:"Top seller. Pushes upgrades hard."},
  {n:"Mina",usd:5200,rv:2,fx:4,tm:5,note:"Fixes complaints. Helps everyone."},
  {n:"Sam",usd:7600,rv:5,fx:1,tm:2,note:"Guests love him."},
- {n:"Leo",usd:6300,rv:1,fx:4,tm:2,note:"Takes the hard complaints."},
+ {n:"Leo",usd:6300,rv:1,fx:4,tm:3,note:"Takes the hard complaints."},
  {n:"Chris",usd:11800,rv:0,fx:0,tm:0,note:"Sells well. Often on his phone."},
  {n:"Noah",usd:4700,rv:1,fx:1,tm:1,note:"New hire. Still learning."}
 ];
@@ -301,10 +301,11 @@ const POTS=[
  {k:"tm",t:"Teammate",d:"Teammate votes. How many coworkers voted for you as “most helpful.”"}
 ];
 const SCORED=["rv","fx","tm"];
+const PTS={rv:10,fx:10,tm:12};
 const fmt=n=>"$"+Math.round(n).toLocaleString("en-US");
 const totalW=w=>POTS.reduce((a,p)=>a+(+w[p.k]||0),0);
-/* The rule: Equal pot ÷ 6. Upsell pot by share of team sales. Reviews/Fixed/Teammate pots have 10 points each: 1 point = 1/10 of the pot. */
-const payouts=w=>AGENTS.map(a=>POOL*((+w.eq||0)/100/AGENTS.length+(+w.up||0)/100*a.usd/UPSELL_TOTAL+SCORED.reduce((t,k)=>t+(+w[k]||0)/100*a[k]/10,0)));
+/* The rule: Equal pot ÷ 6. Upsell pot by share of team sales. Reviews/Fixed pots have 10 points: 1 point = 1/10. Teammate pot has 12 votes: 1 vote = 1/12. */
+const payouts=w=>AGENTS.map(a=>POOL*((+w.eq||0)/100/AGENTS.length+(+w.up||0)/100*a.usd/UPSELL_TOTAL+SCORED.reduce((t,k)=>t+(+w[k]||0)/100*a[k]/PTS[k],0)));
 const store={get(k,f){try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch(e){return f}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const dots=n=>"●".repeat(n)+"○".repeat(5-n);
 
