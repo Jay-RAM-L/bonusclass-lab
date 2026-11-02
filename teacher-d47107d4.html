@@ -256,7 +256,7 @@ tr:last-child td{border-bottom:0}
     <div class="livebar"><span class="pill" id="live">Connecting…</span><span id="count" class="hint"></span>
       <button class="btn" id="reset">Clear for class</button></div>
     <div class="scroll"><table class="plans"><thead><tr>
-      <th class="l">Group</th><th>Equal</th><th>Sales</th><th>Service</th><th>Teamwork</th><th>Total</th><th>Status</th>
+      <th class="l">Group</th><th>Equal</th><th>Upsell</th><th>Reviews</th><th>Fixed</th><th>Teammate</th><th>Total</th><th>Status</th>
     </tr></thead><tbody id="plans"></tbody></table></div>
     <p class="hint">Plans appear here when a group taps Send. If a phone cannot send, type the numbers into the row.</p>
   </section>
@@ -285,30 +285,32 @@ const TOPIC="bonuslab-1412340223b5";
 const NTFY="https://ntfy.sh/"+TOPIC;
 const POOL=10000;
 const AGENTS=[
- {n:"Jordan",s:4,v:1,t:0,note:"Top seller. Pushes upgrades hard."},
- {n:"Mina",s:1,v:3,t:4,note:"Fixes complaints. Helps everyone."},
- {n:"Sam",s:1,v:3,t:2,note:"Guests love him."},
- {n:"Leo",s:1,v:2,t:3,note:"Takes the hard complaints."},
- {n:"Chris",s:2,v:0,t:0,note:"Okay sales. Often on his phone."},
- {n:"Noah",s:1,v:1,t:1,note:"New hire. Still learning."}
+ {n:"Jordan",up:4,rv:1,fx:1,tm:0,note:"Top seller. Pushes upgrades hard."},
+ {n:"Mina",up:1,rv:2,fx:3,tm:4,note:"Fixes complaints. Helps everyone."},
+ {n:"Sam",up:1,rv:4,fx:1,tm:2,note:"Guests love him."},
+ {n:"Leo",up:1,rv:1,fx:3,tm:3,note:"Takes the hard complaints."},
+ {n:"Chris",up:2,rv:1,fx:1,tm:0,note:"Okay sales. Often on his phone."},
+ {n:"Noah",up:1,rv:1,fx:1,tm:1,note:"New hire. Still learning."}
 ];
 const POTS=[
  {k:"eq",t:"Equal",d:"Everyone gets the same amount."},
- {k:"s",t:"Sales",d:"Room upgrades, late checkout and packages sold."},
- {k:"v",t:"Service",d:"Guests named you in a review, or you fixed their complaint."},
- {k:"t",t:"Teamwork",d:"Coworkers voted you “most helpful.”"}
+ {k:"up",t:"Upsell",d:"Money from room upgrades, late checkout and packages you sold."},
+ {k:"rv",t:"Reviews",d:"Guest mentioned your name."},
+ {k:"fx",t:"Fixed",d:"How many service recoveries you did."},
+ {k:"tm",t:"Teammate",d:"Teammate votes. How many coworkers voted for you as “most helpful.”"}
 ];
+const SCORED=["up","rv","fx","tm"];
 const fmt=n=>"$"+Math.round(n).toLocaleString("en-US");
 const totalW=w=>POTS.reduce((a,p)=>a+(+w[p.k]||0),0);
 /* The rule: Equal pot ÷ 6. Every other pot has 10 points, so 1 point = 1/10 of that pot. */
-const payouts=w=>AGENTS.map(a=>POOL*((+w.eq||0)/100/AGENTS.length+(+w.s||0)/100*a.s/10+(+w.v||0)/100*a.v/10+(+w.t||0)/100*a.t/10));
+const payouts=w=>AGENTS.map(a=>POOL*((+w.eq||0)/100/AGENTS.length+SCORED.reduce((t,k)=>t+(+w[k]||0)/100*a[k]/10,0)));
 const store={get(k,f){try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch(e){return f}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const dots=n=>"●".repeat(n)+"○".repeat(5-n);
 
 const VOTER=["Jordan","Mina","Sam","Leo","Chris","Noah"];
 const now=()=>Math.floor(Date.now()/1000);
-let cls=store.get("bonuslab.v2.class",null)||{plans:[null,null,null,null,null,null],since:now(),shown:false,votes:[0,0,0,0,0,0]};
-const save=()=>store.set("bonuslab.v2.class",cls);
+let cls=store.get("bonuslab.v3.class",null)||{plans:[null,null,null,null,null,null],since:now(),shown:false,votes:[0,0,0,0,0,0]};
+const save=()=>store.set("bonuslab.v3.class",cls);
 const valid=w=>w&&POTS.every(p=>Number.isFinite(+w[p.k])&&+w[p.k]>=0&&+w[p.k]<=100);
 const hhmm=t=>new Date(t*1000).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
 
@@ -323,7 +325,7 @@ function renderPlans(){
 }
 document.getElementById("plans").addEventListener("change",e=>{
   const el=e.target,i=+el.dataset.i;if(isNaN(i))return;
-  const p=cls.plans[i]||{w:{eq:0,s:0,v:0,t:0},src:"hand",at:now()};
+  const p=cls.plans[i]||{w:{eq:0,up:0,rv:0,fx:0,tm:0},src:"hand",at:now()};
   p.w[el.dataset.k]=Math.max(0,Math.min(100,+el.value||0));p.src="hand";p.at=now();cls.plans[i]=p;save();renderAll();
 });
 document.getElementById("reset").onclick=()=>{cls={plans:[null,null,null,null,null,null],since:now(),shown:false,votes:[0,0,0,0,0,0]};save();connect();renderAll()};
@@ -352,12 +354,12 @@ document.getElementById("votes").onclick=e=>{const b=e.target.closest("button[da
 
 function renderFacts(){
   const f=document.getElementById("facts"),mx=Math.max(...cls.votes);
-  if(mx===0){f.innerHTML=`<div class="card fact"><span class="label">After the vote</span><p class="hint">The winning plan’s numbers show here.</p></div><div class="card fact"><span class="label">Teamwork pot</span><p class="hint">Did plans with a Teamwork pot get more votes?</p></div>`;return}
+  if(mx===0){f.innerHTML=`<div class="card fact"><span class="label">After the vote</span><p class="hint">The winning plan’s numbers show here.</p></div><div class="card fact"><span class="label">Teammate pot</span><p class="hint">Did plans with a Teammate pot get more votes?</p></div>`;return}
   const wi=cls.votes.indexOf(mx),p=cls.plans[wi],pay=p&&totalW(p.w)===100?payouts(p.w):null;
-  const rows=cls.plans.map((q,i)=>({tm:q&&+q.w.t>0,v:cls.votes[i]})),avg=a=>a.length?a.reduce((s,x)=>s+x.v,0)/a.length:0;
+  const rows=cls.plans.map((q,i)=>({tm:q&&+q.w.tm>0,v:cls.votes[i]})),avg=a=>a.length?a.reduce((s,x)=>s+x.v,0)/a.length:0;
   const y=rows.filter(r=>r.tm),n=rows.filter(r=>!r.tm);
   f.innerHTML=`<div class="card fact"><span class="label">Winner: Group ${wi+1}</span>${pay?`<span class="big num">${fmt(pay[0])} vs ${fmt(pay[1])}</span><p>Jordan (top seller) vs Mina (helps everyone)</p>`:`<p>This plan is not complete.</p>`}</div>
-   <div class="card fact"><span class="label">Teamwork pot</span><span class="big num">${avg(y).toFixed(1)} vs ${avg(n).toFixed(1)}</span><p>Average votes: plans with a Teamwork pot vs without</p></div>`;
+   <div class="card fact"><span class="label">Teammate pot</span><span class="big num">${avg(y).toFixed(1)} vs ${avg(n).toFixed(1)}</span><p>Average votes: plans with a Teammate pot vs without</p></div>`;
 }
 
 /* live plans from student phones */
@@ -373,7 +375,7 @@ function connect(){
     const m=JSON.parse(ev.data);if(m.event!=="message"||m.time<cls.since)return;
     const d=JSON.parse(m.message),g=+d.g;if(!(g>=1&&g<=6)||!valid(d.w))return;
     const old=cls.plans[g-1];if(old&&old.at>m.time)return;
-    cls.plans[g-1]={w:{eq:+d.w.eq,s:+d.w.s,v:+d.w.v,t:+d.w.t},src:"live",at:m.time};save();renderAll();
+    cls.plans[g-1]={w:Object.fromEntries(POTS.map(p=>[p.k,+d.w[p.k]])),src:"live",at:m.time};save();renderAll();
   }catch(e){}};
 }
 

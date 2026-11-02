@@ -241,12 +241,12 @@ tr:last-child td{border-bottom:0}
   <section>
     <h2>The bonus rule</h2>
     <ol class="rules">
-      <li><strong>Split the $10,000 into 4 pots:</strong> Equal, Sales, Service, Teamwork. The 4 numbers must add up to 100%.</li>
+      <li><strong>Split the $10,000 into 5 pots:</strong> Equal, Upsell, Reviews, Fixed, Teammate. The 5 numbers must add up to 100%.</li>
       <li><strong>The Equal pot</strong> is shared equally by all 6 agents.</li>
       <li><strong>Every other pot has 10 points in total.</strong> 1 point = 1/10 of that pot.</li>
     </ol>
     <div class="card example"><span class="label">Example</span>
-      <p>Sales pot = 40% = <strong>$4,000</strong>. 1 Sales point = <strong>$400</strong>. Jordan has 4 Sales points → <strong>$1,600</strong>.</p></div>
+      <p>Upsell pot = 40% = <strong>$4,000</strong>. 1 Upsell point = <strong>$400</strong>. Jordan has 4 Upsell points → <strong>$1,600</strong>.</p></div>
   </section>
 
   <section>
@@ -261,9 +261,10 @@ tr:last-child td{border-bottom:0}
   </section>
 
   <section>
-    <div class="step"><b>Step 2</b><h2>Set your 4 pots</h2></div>
+    <div class="step"><b>Step 2</b><h2>Set your 5 pots</h2></div>
     <div class="card sliders" id="sliders"></div>
     <div class="total" id="total"></div>
+    <dl class="key" id="key"></dl>
   </section>
 
   <section>
@@ -283,23 +284,25 @@ const TOPIC="bonuslab-1412340223b5";
 const NTFY="https://ntfy.sh/"+TOPIC;
 const POOL=10000;
 const AGENTS=[
- {n:"Jordan",s:4,v:1,t:0,note:"Top seller. Pushes upgrades hard."},
- {n:"Mina",s:1,v:3,t:4,note:"Fixes complaints. Helps everyone."},
- {n:"Sam",s:1,v:3,t:2,note:"Guests love him."},
- {n:"Leo",s:1,v:2,t:3,note:"Takes the hard complaints."},
- {n:"Chris",s:2,v:0,t:0,note:"Okay sales. Often on his phone."},
- {n:"Noah",s:1,v:1,t:1,note:"New hire. Still learning."}
+ {n:"Jordan",up:4,rv:1,fx:1,tm:0,note:"Top seller. Pushes upgrades hard."},
+ {n:"Mina",up:1,rv:2,fx:3,tm:4,note:"Fixes complaints. Helps everyone."},
+ {n:"Sam",up:1,rv:4,fx:1,tm:2,note:"Guests love him."},
+ {n:"Leo",up:1,rv:1,fx:3,tm:3,note:"Takes the hard complaints."},
+ {n:"Chris",up:2,rv:1,fx:1,tm:0,note:"Okay sales. Often on his phone."},
+ {n:"Noah",up:1,rv:1,fx:1,tm:1,note:"New hire. Still learning."}
 ];
 const POTS=[
  {k:"eq",t:"Equal",d:"Everyone gets the same amount."},
- {k:"s",t:"Sales",d:"Room upgrades, late checkout and packages sold."},
- {k:"v",t:"Service",d:"Guests named you in a review, or you fixed their complaint."},
- {k:"t",t:"Teamwork",d:"Coworkers voted you “most helpful.”"}
+ {k:"up",t:"Upsell",d:"Money from room upgrades, late checkout and packages you sold."},
+ {k:"rv",t:"Reviews",d:"Guest mentioned your name."},
+ {k:"fx",t:"Fixed",d:"How many service recoveries you did."},
+ {k:"tm",t:"Teammate",d:"Teammate votes. How many coworkers voted for you as “most helpful.”"}
 ];
+const SCORED=["up","rv","fx","tm"];
 const fmt=n=>"$"+Math.round(n).toLocaleString("en-US");
 const totalW=w=>POTS.reduce((a,p)=>a+(+w[p.k]||0),0);
 /* The rule: Equal pot ÷ 6. Every other pot has 10 points, so 1 point = 1/10 of that pot. */
-const payouts=w=>AGENTS.map(a=>POOL*((+w.eq||0)/100/AGENTS.length+(+w.s||0)/100*a.s/10+(+w.v||0)/100*a.v/10+(+w.t||0)/100*a.t/10));
+const payouts=w=>AGENTS.map(a=>POOL*((+w.eq||0)/100/AGENTS.length+SCORED.reduce((t,k)=>t+(+w[k]||0)/100*a[k]/10,0)));
 const store={get(k,f){try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch(e){return f}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const dots=n=>"●".repeat(n)+"○".repeat(5-n);
 
@@ -307,12 +310,10 @@ document.getElementById("team").innerHTML=AGENTS.map(a=>`
  <div class="badge"><div class="clip"></div>
   <div class="head"><div class="av">${a.n[0]}</div><div><div class="name">${a.n}</div><div class="role">${a.note}</div></div></div>
   <div class="pts">
-   <div><span class="k">Sales</span><span class="d">${dots(a.s)}</span><b class="num">${a.s}</b></div>
-   <div><span class="k">Service</span><span class="d">${dots(a.v)}</span><b class="num">${a.v}</b></div>
-   <div><span class="k">Teamwork</span><span class="d">${dots(a.t)}</span><b class="num">${a.t}</b></div>
+   ${SCORED.map(k=>{const p=POTS.find(x=>x.k===k);return `<div><span class="k">${p.t}</span><span class="d">${dots(a[k])}</span><b class="num">${a[k]}</b></div>`}).join("")}
   </div></div>`).join("");
 
-let my=store.get("bonuslab.v2.my",{g:1,w:{eq:40,s:20,v:20,t:20}});
+let my=store.get("bonuslab.v3.my",{g:1,w:{eq:40,up:20,rv:10,fx:20,tm:10}});
 const grp=document.getElementById("grp");
 grp.innerHTML=[1,2,3,4,5,6].map(g=>`<button aria-pressed="${my.g===g}" data-g="${g}">${g}</button>`).join("");
 grp.onclick=e=>{const b=e.target.closest("button");if(!b)return;my.g=+b.dataset.g;grp.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));render()};
@@ -323,8 +324,9 @@ document.getElementById("sliders").innerHTML=POTS.map(p=>`
   <input type="range" id="s-${p.k}" min="0" max="100" step="10" value="${my.w[p.k]}" data-k="${p.k}"></div>`).join("");
 document.getElementById("sliders").oninput=e=>{const k=e.target.dataset.k;if(!k)return;my.w[k]=+e.target.value;document.getElementById("o-"+k).textContent=my.w[k]+"%";render()};
 
+document.getElementById("key").innerHTML=POTS.map(p=>`<div><dt>${p.t}</dt><dd>${p.d}</dd></div>`).join("");
 function render(){
-  store.set("bonuslab.v2.my",my);
+  store.set("bonuslab.v3.my",my);
   const t=totalW(my.w),ok=t===100;
   const tot=document.getElementById("total");
   tot.className="total "+(ok?"ok":"no");
