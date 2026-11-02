@@ -243,17 +243,17 @@ tr:last-child td{border-bottom:0}
     <ol class="rules">
       <li><strong>Split the $10,000 into 5 pots:</strong> Equal, Upsell, Reviews, Fixed, Teammate. The 5 numbers must add up to 100%.</li>
       <li><strong>The Equal pot</strong> is shared equally by all 6 agents.</li>
-      <li><strong>The Upsell pot</strong> is shared by sales: your share = what you sold ÷ $15,000.</li>
+      <li><strong>The Upsell pot</strong> is shared by sales: your share = what you sold ÷ $50,000.</li>
       <li><strong>Reviews, Fixed and Teammate pots</strong> have 10 points each. 1 point = 1/10 of that pot.</li>
     </ol>
     <div class="card example"><span class="label">Examples</span>
-      <p>Upsell pot = 40% = <strong>$4,000</strong>. Jordan sold $4,800 of $15,000 (32%) → <strong>$1,280</strong>.</p>
+      <p>Upsell pot = 40% = <strong>$4,000</strong>. Jordan sold $16,000 of $50,000 (32%) → <strong>$1,280</strong>.</p>
       <p>Reviews pot = 20% = <strong>$2,000</strong>. 1 point = $200. Sam has 5 points → <strong>$1,000</strong>.</p></div>
   </section>
 
   <section>
     <h2>Your team</h2>
-    <p class="hint"><strong>Upsell</strong> is how much each agent sold (team total $15,000). <strong>Reviews, Fixed, Teammate</strong> are counts: each adds up to 10 for the team.</p>
+    <p class="hint"><strong>Upsell</strong> is how much each agent sold (team total $50,000). <strong>Reviews, Fixed, Teammate</strong> are counts: each adds up to 10 for the team.</p>
     <div class="team" id="team"></div>
   </section>
 
@@ -286,12 +286,12 @@ const TOPIC="bonuslab-1412340223b5";
 const NTFY="https://ntfy.sh/"+TOPIC;
 const POOL=10000;
 const AGENTS=[
- {n:"Jordan",usd:4800,rv:1,fx:0,tm:0,note:"Top seller. Pushes upgrades hard."},
- {n:"Mina",usd:1500,rv:2,fx:4,tm:5,note:"Fixes complaints. Helps everyone."},
- {n:"Sam",usd:2200,rv:5,fx:1,tm:2,note:"Guests love him."},
- {n:"Leo",usd:1900,rv:1,fx:4,tm:2,note:"Takes the hard complaints."},
- {n:"Chris",usd:3600,rv:0,fx:0,tm:0,note:"Sells well. Often on his phone."},
- {n:"Noah",usd:1000,rv:1,fx:1,tm:1,note:"New hire. Still learning."}
+ {n:"Jordan",usd:16000,rv:1,fx:0,tm:0,note:"Top seller. Pushes upgrades hard."},
+ {n:"Mina",usd:5000,rv:2,fx:4,tm:5,note:"Fixes complaints. Helps everyone."},
+ {n:"Sam",usd:7200,rv:5,fx:1,tm:2,note:"Guests love him."},
+ {n:"Leo",usd:6100,rv:1,fx:4,tm:2,note:"Takes the hard complaints."},
+ {n:"Chris",usd:11200,rv:0,fx:0,tm:0,note:"Sells well. Often on his phone."},
+ {n:"Noah",usd:4500,rv:1,fx:1,tm:1,note:"New hire. Still learning."}
 ];
 const UPSELL_TOTAL=AGENTS.reduce((t,a)=>t+a.usd,0);
 const POTS=[
@@ -313,7 +313,7 @@ document.getElementById("team").innerHTML=AGENTS.map(a=>`
  <div class="badge"><div class="clip"></div>
   <div class="head"><div class="av">${a.n[0]}</div><div><div class="name">${a.n}</div><div class="role">${a.note}</div></div></div>
   <div class="pts">
-   <div><span class="k">Upsell</span><span class="d">${dots(Math.min(5,Math.round(a.usd/1000)))}</span><b class="num">${fmt(a.usd)}</b></div>
+   <div><span class="k">Upsell</span><span class="d">${dots(Math.min(5,Math.round(a.usd/3200)))}</span><b class="num">${fmt(a.usd)}</b></div>
    ${SCORED.map(k=>{const p=POTS.find(x=>x.k===k);return `<div><span class="k">${p.t}</span><span class="d">${dots(a[k])}</span><b class="num">${a[k]}</b></div>`}).join("")}
   </div></div>`).join("");
 
