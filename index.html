@@ -217,6 +217,10 @@ tr:last-child td{border-bottom:0}
 .rules{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:17px;max-width:62ch}
 .example p{font-size:17px}
 .key.big{font-size:16px;color:var(--ink);gap:8px}.key.big dt{min-width:90px}
+.ask{display:flex;flex-direction:column;gap:6px}.ask ol{margin:0;padding-left:22px;font-size:18px;display:flex;flex-direction:column;gap:4px}
+.pay tr.sum td{font-weight:700;background:var(--bg)}
+.fact .big{font-size:26px}
+.groups button:disabled{opacity:.35;cursor:not-allowed}
 .howto{display:flex;flex-direction:column;gap:8px}.howto p{font-size:17px;max-width:62ch}
 .pts{display:flex;flex-direction:column;gap:4px;padding:4px 14px 12px;margin-top:auto}
 .pts div{display:grid;grid-template-columns:76px 1fr 64px;align-items:center;gap:8px;font-size:14px}
@@ -280,6 +284,13 @@ tr:last-child td{border-bottom:0}
     <button class="btn primary big" id="send">Send Group 1’s plan</button>
     <p class="sendmsg" id="sendmsg" role="status"></p>
   </section>
+
+  <section>
+    <div class="step"><b>Step 4</b><h2>Vote for the best plan</h2></div>
+    <p class="hint">Wait until your teacher says <strong>“Vote now.”</strong> Look at the plans on the class screen. Tap one group. You cannot vote for your own group. Everyone votes on their own phone.</p>
+    <div class="groups" id="vote"></div>
+    <p class="sendmsg" id="votemsg" role="status"></p>
+  </section>
 </main>
 </div>
 <script>
@@ -340,8 +351,23 @@ function render(){
   const p=ok?payouts(my.w):AGENTS.map(()=>0),mx=Math.max(1,...p);
   document.getElementById("bars").innerHTML=ok?AGENTS.map((a,i)=>`<div class="bar"><span class="who">${a.n}</span><div class="track"><div class="fill" style="width:${p[i]/mx*100}%"></div></div><span class="amt num">${fmt(p[i])}</span></div>`).join("")
     :`<p class="hint">Make the total 100% to see who gets what.</p>`;
-  const b=document.getElementById("send");b.disabled=!ok;b.textContent=`Send Group ${my.g}’s plan`;
+  if(typeof renderVote==="function")renderVote();const b=document.getElementById("send");b.disabled=!ok;b.textContent=`Send Group ${my.g}’s plan`;
 }
+let dev=store.get("bonuslab.dev",null);if(!dev){dev=Math.random().toString(36).slice(2,10);store.set("bonuslab.dev",dev)}
+let myVote=store.get("bonuslab.v3.vote",null);
+function renderVote(){
+  document.getElementById("vote").innerHTML=[1,2,3,4,5,6].map(g=>g===my.g
+    ?`<button disabled title="Your group" aria-label="Group ${g} (your group)">${g}</button>`
+    :`<button data-v="${g}" aria-pressed="${myVote===g}">${g}</button>`).join("");
+}
+document.getElementById("vote").onclick=async e=>{
+  const b=e.target.closest("button[data-v]");if(!b)return;const to=+b.dataset.v,m=document.getElementById("votemsg");
+  m.className="sendmsg";m.textContent="Sending your vote…";
+  try{const r=await fetch(NTFY,{method:"POST",body:JSON.stringify({type:"vote",id:dev,from:my.g,to})});if(!r.ok)throw 0;
+    myVote=to;store.set("bonuslab.v3.vote",to);renderVote();
+    m.className="sendmsg ok";m.textContent=`Your vote for Group ${to} is in. Tap another group to change it.`;
+  }catch(err){m.className="sendmsg no";m.textContent="Could not send. Raise your hand so your teacher can count your vote.";}
+};
 render();
 
 document.getElementById("send").onclick=async()=>{
@@ -349,7 +375,7 @@ document.getElementById("send").onclick=async()=>{
   if(totalW(my.w)!==100)return;
   b.disabled=true;m.className="sendmsg";m.textContent="Sending…";
   try{
-    const r=await fetch(NTFY,{method:"POST",body:JSON.stringify({g:my.g,w:my.w})});
+    const r=await fetch(NTFY,{method:"POST",body:JSON.stringify({type:"plan",g:my.g,w:my.w})});
     if(!r.ok)throw new Error(r.status);
     m.className="sendmsg ok";m.textContent=`Sent! Group ${my.g}’s plan is on the class screen. You can change it and send again.`;
   }catch(e){

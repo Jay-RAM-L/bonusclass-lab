@@ -217,6 +217,10 @@ tr:last-child td{border-bottom:0}
 .rules{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:17px;max-width:62ch}
 .example p{font-size:17px}
 .key.big{font-size:16px;color:var(--ink);gap:8px}.key.big dt{min-width:90px}
+.ask{display:flex;flex-direction:column;gap:6px}.ask ol{margin:0;padding-left:22px;font-size:18px;display:flex;flex-direction:column;gap:4px}
+.pay tr.sum td{font-weight:700;background:var(--bg)}
+.fact .big{font-size:26px}
+.groups button:disabled{opacity:.35;cursor:not-allowed}
 .howto{display:flex;flex-direction:column;gap:8px}.howto p{font-size:17px;max-width:62ch}
 .pts{display:flex;flex-direction:column;gap:4px;padding:4px 14px 12px;margin-top:auto}
 .pts div{display:grid;grid-template-columns:76px 1fr 64px;align-items:center;gap:8px;font-size:14px}
@@ -267,17 +271,20 @@ tr:last-child td{border-bottom:0}
     <div class="step"><b>Round 2</b><h2>Who gets what?</h2></div>
     <div class="row-btns"><button class="btn brass" id="show">Show who gets what</button><button class="btn" id="hide" hidden>Hide</button></div>
     <div class="scroll" id="paywrap"></div>
+    <div class="card ask"><span class="label">Ask one person from each group</span>
+      <ol><li>Why did you choose these percentages?</li><li>Did your #1 and #2 turn out the way you expected?</li><li>What was your top priority?</li></ol></div>
   </section>
 
   <section>
-    <div class="step"><b>Round 3</b><h2>Agent vote</h2></div>
-    <div class="card" style="display:flex;flex-direction:column;gap:12px"><p style="font-size:17px"><strong>Your group is now one agent.</strong> Look at your agent’s row. Talk for 1 minute, then give <strong>one vote</strong> to the plan your agent likes best. Not your own group’s plan.</p>
-      <div class="assign" id="assign"></div></div>
+    <div class="step"><b>Round 3</b><h2>Class vote</h2></div>
+    <div class="card" style="display:flex;flex-direction:column;gap:12px"><p style="font-size:17px">Everyone votes on their phone (Step 4): <strong>one vote</strong> for the best plan. <strong>Not your own group.</strong></p>
+      <div class="row-btns"><button class="btn brass" id="openvote">Open voting</button><span class="pill" id="votestate">Voting is closed</span><span class="hint" id="votecount"></span></div></div>
     <div class="votes" id="votes"></div>
+    <p class="hint">Votes come in from phones. Use − and + to add votes from students without a phone.</p>
   </section>
 
   <section>
-    <div class="step"><b>Wrap-up</b><h2>Two numbers</h2></div>
+    <div class="step"><b>Wrap-up</b><h2>The winning plan</h2></div>
     <div class="facts" id="facts"></div>
   </section>
 </main>
@@ -315,7 +322,8 @@ const show=(k,v)=>k==="up"?fmt(v):String(v);
 
 const VOTER=["Jordan","Mina","Sam","Leo","Chris","Noah"];
 const now=()=>Math.floor(Date.now()/1000);
-let cls=store.get("bonuslab.v3.class",null)||{plans:[null,null,null,null,null,null],since:now(),shown:false,votes:[0,0,0,0,0,0]};
+let cls=store.get("bonuslab.v3.class",null)||{plans:[null,null,null,null,null,null],since:now(),shown:false,votes:[0,0,0,0,0,0],live:{},voteSince:null};
+cls.live=cls.live||{};
 const save=()=>store.set("bonuslab.v3.class",cls);
 const valid=w=>w&&POTS.every(p=>Number.isFinite(+w[p.k])&&+w[p.k]>=0&&+w[p.k]<=100);
 const hhmm=t=>new Date(t*1000).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
@@ -334,7 +342,7 @@ document.getElementById("plans").addEventListener("change",e=>{
   const p=cls.plans[i]||{w:{eq:0,up:0,rv:0,fx:0,tm:0},src:"hand",at:now()};
   p.w[el.dataset.k]=Math.max(0,Math.min(100,+el.value||0));p.src="hand";p.at=now();cls.plans[i]=p;save();renderAll();
 });
-document.getElementById("reset").onclick=()=>{cls={plans:[null,null,null,null,null,null],since:now(),shown:false,votes:[0,0,0,0,0,0]};save();connect();renderAll()};
+document.getElementById("reset").onclick=()=>{cls={plans:[null,null,null,null,null,null],since:now(),shown:false,votes:[0,0,0,0,0,0],live:{},voteSince:null};save();connect();renderAll()};
 
 function renderPay(){
   const w=document.getElementById("paywrap");
@@ -343,29 +351,39 @@ function renderPay(){
   const cols=cls.plans.map(p=>p&&totalW(p.w)===100?payouts(p.w):null);
   const mx=Math.max(1,...cols.flatMap(c=>c||[0]));
   w.innerHTML=`<table class="pay"><thead><tr><th class="l">Agent</th>${cols.map((c,i)=>`<th>Group ${i+1}</th>`).join("")}</tr></thead><tbody>
-   ${AGENTS.map((a,j)=>`<tr><td class="l"><strong>${a.n}</strong> <span class="hint">· Group ${j+1} votes</span></td>${cols.map(c=>c?`<td class="cell num" style="background:color-mix(in srgb,var(--pitch) ${Math.round(c[j]/mx*45)}%,transparent)">${fmt(c[j])}</td>`:`<td class="hint">–</td>`).join("")}</tr>`).join("")}
+   ${AGENTS.map((a,j)=>`<tr><td class="l"><strong>${a.n}</strong></td>${cols.map(c=>c?`<td class="cell num" style="background:color-mix(in srgb,var(--pitch) ${Math.round(c[j]/mx*45)}%,transparent)">${fmt(c[j])}</td>`:`<td class="hint">–</td>`).join("")}</tr>`).join("")}
+   ${[["#1",0],["#2",1]].map(([lab,r])=>`<tr class="sum"><td class="l"><strong>${lab} earner</strong></td>${cols.map(c=>{if(!c)return `<td class="hint">–</td>`;const o=c.map((v,j)=>[v,j]).sort((a,b)=>b[0]-a[0]);return `<td>${AGENTS[o[r][1]].n}</td>`}).join("")}</tr>`).join("")}
+   <tr class="sum"><td class="l"><strong>Top priority</strong></td>${cls.plans.map(p=>{if(!p||totalW(p.w)!==100)return `<td class="hint">–</td>`;const top=[...POTS].sort((a,b)=>p.w[b.k]-p.w[a.k])[0];return `<td>${top.t} ${p.w[top.k]}%</td>`}).join("")}</tr>
   </tbody></table>`;
 }
 document.getElementById("show").onclick=()=>{cls.shown=true;save();renderPay()};
 document.getElementById("hide").onclick=()=>{cls.shown=false;save();renderPay()};
 
-document.getElementById("assign").innerHTML=VOTER.map((n,i)=>`<span><b>Group ${i+1}</b> ${n}</span>`).join("");
+function liveCounts(){const c=[0,0,0,0,0,0];Object.values(cls.live||{}).forEach(v=>{if(v.to!==v.from&&v.to>=1&&v.to<=6)c[v.to-1]++});return c}
+function tally(){const l=liveCounts();return cls.votes.map((v,i)=>Math.max(0,v+l[i]))}
+document.getElementById("openvote").onclick=()=>{if(cls.voteSince){cls.voteClosed=now();cls.voteSince=null}else{cls.voteSince=now();cls.voteClosed=null;cls.live={}}save();renderVotes();renderFacts()};
 function renderVotes(){
-  const mx=Math.max(...cls.votes),any=mx>0;
-  document.getElementById("votes").innerHTML=cls.votes.map((v,i)=>`<div class="vote ${any&&v===mx?"win":""}">
+  const T=tally(),mx=Math.max(...T),any=mx>0;
+  document.getElementById("votes").innerHTML=T.map((v,i)=>`<div class="vote ${any&&v===mx?"win":""}">
    <span class="label">Group ${i+1}’s plan${any&&v===mx?" 🏆":""}</span><span class="vc num">${v}</span>
    <div class="row"><button aria-label="Remove vote for group ${i+1}" data-v="${i}" data-d="-1">−</button><button aria-label="Add vote for group ${i+1}" data-v="${i}" data-d="1">+</button></div></div>`).join("");
+  const open=!!cls.voteSince,n=Object.keys(cls.live||{}).length;
+  const st=document.getElementById("votestate");st.textContent=open?"Voting is open":"Voting is closed";st.className="pill "+(open?"on":"");
+  document.getElementById("openvote").textContent=open?"Close voting":"Open voting";
+  document.getElementById("votecount").textContent=open||n?`${n} phone vote${n===1?"":"s"}`:"";
 }
-document.getElementById("votes").onclick=e=>{const b=e.target.closest("button[data-v]");if(!b)return;const i=+b.dataset.v;cls.votes[i]=Math.max(0,cls.votes[i]+ +b.dataset.d);save();renderVotes();renderFacts()};
+document.getElementById("votes").onclick=e=>{const b=e.target.closest("button[data-v]");if(!b)return;const i=+b.dataset.v;const T=tally();if(+b.dataset.d<0&&T[i]===0)return;cls.votes[i]+= +b.dataset.d;save();renderVotes();renderFacts()};
 
 function renderFacts(){
-  const f=document.getElementById("facts"),mx=Math.max(...cls.votes);
-  if(mx===0){f.innerHTML=`<div class="card fact"><span class="label">After the vote</span><p class="hint">The winning plan’s numbers show here.</p></div><div class="card fact"><span class="label">Teammate pot</span><p class="hint">Did plans with a Teammate pot get more votes?</p></div>`;return}
-  const wi=cls.votes.indexOf(mx),p=cls.plans[wi],pay=p&&totalW(p.w)===100?payouts(p.w):null;
-  const rows=cls.plans.map((q,i)=>({tm:q&&+q.w.tm>0,v:cls.votes[i]})),avg=a=>a.length?a.reduce((s,x)=>s+x.v,0)/a.length:0;
-  const y=rows.filter(r=>r.tm),n=rows.filter(r=>!r.tm);
-  f.innerHTML=`<div class="card fact"><span class="label">Winner: Group ${wi+1}</span>${pay?`<span class="big num">${fmt(pay[0])} vs ${fmt(pay[1])}</span><p>Jordan (top seller) vs Mina (helps everyone)</p>`:`<p>This plan is not complete.</p>`}</div>
-   <div class="card fact"><span class="label">Teammate pot</span><span class="big num">${avg(y).toFixed(1)} vs ${avg(n).toFixed(1)}</span><p>Average votes: plans with a Teammate pot vs without</p></div>`;
+  const f=document.getElementById("facts"),T=tally(),mx=Math.max(...T);
+  const close=`<div class="card fact"><span class="label">So, which plan is right?</span><span class="big">No single right answer.</span><p>Every plan says what the team values most. A good plan is <strong>clear</strong>, <strong>set before the work starts</strong>, and <strong>the same for everyone</strong>.</p></div>`;
+  if(mx===0){f.innerHTML=`<div class="card fact"><span class="label">After the vote</span><p class="hint">The winning plan shows here.</p></div>`+close;return}
+  const wi=T.indexOf(mx),p=cls.plans[wi],ok=p&&totalW(p.w)===100;
+  let body=`<p>This plan is not complete.</p>`;
+  if(ok){const pay=payouts(p.w),o=pay.map((v,j)=>[v,j]).sort((a,b)=>b[0]-a[0]);
+    body=`<span class="big num">${POTS.filter(q=>p.w[q.k]>0).map(q=>`${q.t} ${p.w[q.k]}%`).join(" · ")}</span>
+    <p>#1 ${AGENTS[o[0][1]].n} ${fmt(o[0][0])} · #2 ${AGENTS[o[1][1]].n} ${fmt(o[1][0])} · last ${AGENTS[o[5][1]].n} ${fmt(o[5][0])}</p>`}
+  f.innerHTML=`<div class="card fact"><span class="label">Winner: Group ${wi+1} · ${mx} vote${mx===1?"":"s"}</span>${body}</div>`+close;
 }
 
 /* live plans from student phones */
@@ -379,7 +397,10 @@ function connect(){
   es.onerror=()=>setLive("Live link lost · retrying (you can type plans by hand)",false);
   es.onmessage=ev=>{try{
     const m=JSON.parse(ev.data);if(m.event!=="message"||m.time<cls.since)return;
-    const d=JSON.parse(m.message),g=+d.g;if(!(g>=1&&g<=6)||!valid(d.w))return;
+    const d=JSON.parse(m.message);
+    if(d.type==="vote"){if(!cls.voteSince||m.time<cls.voteSince)return;const id=String(d.id||"").slice(0,20),to=+d.to,from=+d.from;
+      if(!id||!(to>=1&&to<=6))return;const old=cls.live[id];if(old&&old.at>m.time)return;cls.live[id]={to,from,at:m.time};save();renderVotes();renderFacts();return}
+    const g=+d.g;if(!(g>=1&&g<=6)||!valid(d.w))return;
     const old=cls.plans[g-1];if(old&&old.at>m.time)return;
     cls.plans[g-1]={w:Object.fromEntries(POTS.map(p=>[p.k,+d.w[p.k]])),src:"live",at:m.time};save();renderAll();
   }catch(e){}};
