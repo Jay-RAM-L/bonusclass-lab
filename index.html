@@ -226,6 +226,12 @@ tr:last-child td{border-bottom:0}
 .pts div{display:grid;grid-template-columns:76px 1fr 64px;align-items:center;gap:8px;font-size:14px}
 .pts .k{color:var(--muted)} .pts .d{color:var(--pitch);letter-spacing:3px} .pts b{text-align:right}
 .btn.big{font-size:18px;padding:14px 22px;align-self:flex-start}
+.qa{display:flex;flex-direction:column;gap:10px}
+.qa input[type=text]{font:500 16px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;width:100%;box-sizing:border-box;min-width:0}
+.qa label,.qa>span{font-weight:600}
+.qa .fill-in{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.qa .fill-in span{font-weight:600;white-space:nowrap}.qa .fill-in input{flex:1 1 160px}
+.yn{display:flex;gap:8px}.yn button{min-width:84px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:700 16px var(--body);cursor:pointer}
+.yn button[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);color:var(--surface)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .sendmsg{font-weight:600;min-height:1.5em} .sendmsg.ok{color:var(--good)} .sendmsg.no{color:var(--bad)}
 .livebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -286,7 +292,22 @@ tr:last-child td{border-bottom:0}
   </section>
 
   <section>
-    <div class="step"><b>Step 4</b><h2>Vote for the best plan</h2></div>
+    <div class="step"><b>Step 4</b><h2>Answer as a group</h2></div>
+    <p class="hint">Talk with your group, write your answers, and send them. They show on the class screen.</p>
+    <div class="card qa">
+      <label for="a-why"><b>1.</b> Why did you choose these percentages? <span class="hint">(one sentence)</span></label>
+      <input type="text" id="a-why" maxlength="140" placeholder="We chose these because…" autocomplete="off">
+      <span><b>2.</b> Did your #1 and #2 turn out the way you expected? <span class="hint" id="a-top2"></span></span>
+      <div class="yn" id="a-exp"><button type="button" data-x="Yes" aria-pressed="false">Yes</button><button type="button" data-x="No" aria-pressed="false">No</button></div>
+      <label for="a-top"><b>3.</b> What was your top priority?</label>
+      <div class="fill-in"><span>Our top priority is</span><input type="text" id="a-top" maxlength="60" placeholder="___" autocomplete="off"></div>
+    </div>
+    <button class="btn primary big" id="asend">Send Group 1’s answers</button>
+    <p class="sendmsg" id="amsg" role="status"></p>
+  </section>
+
+  <section>
+    <div class="step"><b>Step 5</b><h2>Vote for the best plan</h2></div>
     <p class="hint">Wait until your teacher says <strong>“Vote now.”</strong> Look at the plans on the class screen. Tap one group. You cannot vote for your own group. Everyone votes on their own phone.</p>
     <div class="groups" id="vote"></div>
     <p class="sendmsg" id="votemsg" role="status"></p>
@@ -351,6 +372,7 @@ function render(){
   const p=ok?payouts(my.w):AGENTS.map(()=>0),mx=Math.max(1,...p);
   document.getElementById("bars").innerHTML=ok?AGENTS.map((a,i)=>`<div class="bar"><span class="who">${a.n}</span><div class="track"><div class="fill" style="width:${p[i]/mx*100}%"></div></div><span class="amt num">${fmt(p[i])}</span></div>`).join("")
     :`<p class="hint">Make the total 100% to see who gets what.</p>`;
+  if(typeof renderAns==="function")renderAns(ok?p:null);
   if(typeof renderVote==="function")renderVote();const b=document.getElementById("send");b.disabled=!ok;b.textContent=`Send Group ${my.g}’s plan`;
 }
 let dev=store.get("bonuslab.dev",null);if(!dev){dev=Math.random().toString(36).slice(2,10);store.set("bonuslab.dev",dev)}
@@ -367,6 +389,31 @@ document.getElementById("vote").onclick=async e=>{
     myVote=to;store.set("bonuslab.v3.vote",to);renderVote();
     m.className="sendmsg ok";m.textContent=`Your vote for Group ${to} is in. Tap another group to change it.`;
   }catch(err){m.className="sendmsg no";m.textContent="Could not send. Raise your hand so your teacher can count your vote.";}
+};
+/* Step 4: group answers */
+let ans=store.get("bonuslab.v3.ans",{why:"",exp:"",top:""});
+const aWhy=document.getElementById("a-why"),aTop=document.getElementById("a-top"),aExp=document.getElementById("a-exp");
+aWhy.value=ans.why;aTop.value=ans.top;
+function renderAns(p){
+  aExp.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.x===ans.exp));
+  const t=document.getElementById("a-top2");
+  if(p){const o=p.map((v,j)=>[v,j]).sort((a,b)=>b[0]-a[0]);t.textContent=`(Your plan: #1 ${AGENTS[o[0][1]].n}, #2 ${AGENTS[o[1][1]].n})`}else t.textContent="";
+  document.getElementById("asend").textContent=`Send Group ${my.g}’s answers`;
+}
+aWhy.oninput=()=>{ans.why=aWhy.value;store.set("bonuslab.v3.ans",ans)};
+aTop.oninput=()=>{ans.top=aTop.value;store.set("bonuslab.v3.ans",ans)};
+aExp.onclick=e=>{const b=e.target.closest("button[data-x]");if(!b)return;ans.exp=b.dataset.x;store.set("bonuslab.v3.ans",ans);render()};
+document.getElementById("asend").onclick=async()=>{
+  const b=document.getElementById("asend"),m=document.getElementById("amsg");
+  const why=aWhy.value.trim(),top=aTop.value.trim();
+  if(!why||!ans.exp||!top){m.className="sendmsg no";m.textContent="Please answer all 3 questions first.";return}
+  b.disabled=true;m.className="sendmsg";m.textContent="Sending…";
+  try{
+    const r=await fetch(NTFY,{method:"POST",body:JSON.stringify({type:"answer",g:my.g,why,exp:ans.exp,top})});
+    if(!r.ok)throw new Error(r.status);
+    m.className="sendmsg ok";m.textContent=`Sent! Group ${my.g}’s answers are on the class screen. You can change them and send again.`;
+  }catch(e){m.className="sendmsg no";m.textContent="Could not send. Be ready to say your answers out loud.";}
+  b.disabled=false;
 };
 render();
 
