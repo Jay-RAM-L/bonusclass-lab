@@ -237,6 +237,9 @@ tr:last-child td{border-bottom:0}
 .livebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .pill{padding:6px 12px;border-radius:999px;background:var(--line);font-weight:700;font-size:14px}
 .pill.on{background:var(--pitch-soft);color:var(--good)} .pill.off{background:var(--bad-soft);color:var(--bad)}
+.equalbox{border:2px solid var(--pitch);background:var(--pitch-soft);border-radius:14px;padding:14px 16px;margin-bottom:18px;display:flex;flex-direction:column;gap:6px}
+.equalbox p{margin:0;font-size:17px;color:var(--ink)}.equalbox .eq-ex{font-size:15px;color:var(--muted)}.equalbox .eq-ex strong{color:var(--good)}
+.equalbox .eq-tag{align-self:flex-start;background:var(--pitch);color:var(--surface);font-family:var(--display);font-weight:800;font-size:14px;letter-spacing:.04em;text-transform:uppercase;padding:3px 10px;border-radius:999px}
 </style>
 </head><body>
 <header class="top"><div class="top-in"><div class="brand"><span class="ball">⚽</span>Bonus Lab</div><span class="label">Team Plan</span></div></header>
@@ -259,6 +262,11 @@ tr:last-child td{border-bottom:0}
   </section>
 
   <section>
+    <div class="equalbox" role="note">
+      <span class="eq-tag">Equal</span>
+      <p><strong>Everyone gets the same, no matter what.</strong></p>
+      <p class="eq-ex">Example: 40% in Equal = $4,000 ÷ 6 agents = <strong>about $667 each</strong>, even for someone who sold nothing.</p>
+    </div>
     <h2>What the 4 numbers mean</h2>
     <dl class="key big" id="key"></dl>
   </section>
