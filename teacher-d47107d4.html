@@ -264,7 +264,7 @@ tr:last-child td{border-bottom:0}
     <div class="livebar"><span class="pill" id="live">Connecting…</span><span id="count" class="hint"></span>
       <button class="btn" id="reset">Clear for class</button></div>
     <div class="scroll"><table class="plans"><thead><tr>
-      <th class="l">Group</th><th>Equal</th><th>Upsell</th><th>Reviews</th><th>Fixed</th><th>Teammate</th><th>Total</th><th>Status</th>
+      <th class="l">Group</th><th>Equal</th><th>Upsell</th><th>Reviews</th><th>Problem-solving</th><th>Teammate</th><th>Total</th><th>Status</th>
     </tr></thead><tbody id="plans"></tbody></table></div>
     <p class="hint">Plans appear here when a group taps Send. If a phone cannot send, type the numbers into the row.</p>
   </section>
@@ -309,7 +309,7 @@ const POTS=[
  {k:"eq",t:"Equal",d:"Everyone gets the same amount."},
  {k:"up",t:"Upsell",d:"Upgrade amount the agent sold."},
  {k:"rv",t:"Reviews",d:"Guests mentioned the agent’s name in a review."},
- {k:"fx",t:"Fixed",d:"Service recovery performance."},
+ {k:"fx",t:"Problem-solving",d:"Solved guest problems well."},
  {k:"tm",t:"Teammate",d:"Every agent voted for 2 teammates. No one could vote for themselves."}
 ];
 const SCORED=["up","rv","fx","tm"];
@@ -317,7 +317,7 @@ const TOTAL=Object.fromEntries(SCORED.map(k=>[k,AGENTS.reduce((t,a)=>t+a[k],0)])
 const MAX=Object.fromEntries(SCORED.map(k=>[k,Math.max(...AGENTS.map(a=>a[k]))]));
 const fmt=n=>"$"+Math.round(n).toLocaleString("en-US");
 const totalW=w=>POTS.reduce((a,p)=>a+(+w[p.k]||0),0);
-/* The rule: Equal pot ÷ 6. Every other pot is shared by each agent's share of the team total. */
+/* The rule: Equal slice ÷ 6. Every other slice is shared by each agent's share of the team total. */
 const payouts=w=>AGENTS.map(a=>POOL*((+w.eq||0)/100/AGENTS.length+SCORED.reduce((t,k)=>t+(+w[k]||0)/100*a[k]/TOTAL[k],0)));
 const store={get(k,f){try{const v=localStorage.getItem(k);return v?JSON.parse(v):f}catch(e){return f}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const dots=n=>"●".repeat(n)+"○".repeat(5-n);
