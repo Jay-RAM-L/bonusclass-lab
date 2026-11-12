@@ -240,6 +240,8 @@ tr:last-child td{border-bottom:0}
 .equalbox{border:2px solid var(--pitch);background:var(--pitch-soft);border-radius:14px;padding:14px 16px;margin-bottom:18px;display:flex;flex-direction:column;gap:6px}
 .equalbox p{margin:0;font-size:17px;color:var(--ink)}.equalbox .eq-ex{font-size:15px;color:var(--muted)}.equalbox .eq-ex strong{color:var(--good)}
 .equalbox .eq-tag{align-self:flex-start;background:var(--pitch);color:var(--surface);font-family:var(--display);font-weight:800;font-size:14px;letter-spacing:.04em;text-transform:uppercase;padding:3px 10px;border-radius:999px}
+.leader-note{margin:0 0 10px;padding:10px 14px;border-radius:10px;background:var(--brass-soft);color:var(--ink);font-size:15px;border-left:4px solid var(--brass)}
+.leader-note.all{background:var(--pitch-soft);border-left-color:var(--pitch)}
 </style>
 </head><body>
 <header class="top"><div class="top-in"><div class="brand"><span class="ball">⚽</span>Bonus Lab</div><span class="label">Team Plan</span></div></header>
@@ -295,6 +297,7 @@ tr:last-child td{border-bottom:0}
 
   <section>
     <div class="step"><b>Step 3</b><h2>Send your plan</h2></div>
+    <p class="leader-note">👤 <strong>Group leader only:</strong> one person per group taps Send.</p>
     <button class="btn primary big" id="send">Send Group 1’s plan</button>
     <p class="sendmsg" id="sendmsg" role="status"></p>
   </section>
@@ -310,13 +313,15 @@ tr:last-child td{border-bottom:0}
       <label for="a-top"><b>3.</b> What was your top priority?</label>
       <div class="fill-in"><span>Our top priority is</span><input type="text" id="a-top" maxlength="60" placeholder="___" autocomplete="off"></div>
     </div>
+    <p class="leader-note">👤 <strong>Group leader only:</strong> one person per group taps Send.</p>
     <button class="btn primary big" id="asend">Send Group 1’s answers</button>
     <p class="sendmsg" id="amsg" role="status"></p>
   </section>
 
   <section>
     <div class="step"><b>Step 5</b><h2>Vote for the best plan</h2></div>
-    <p class="hint">Wait until your teacher says <strong>“Vote now.”</strong> Look at the plans on the class screen. Tap one group. You cannot vote for your own group. Everyone votes on their own phone.</p>
+    <p class="leader-note all">🙋 <strong>Everyone votes</strong> on their own phone.</p>
+    <p class="hint">Wait until your teacher says <strong>“Vote now.”</strong> Look at the plans on the class screen. Tap one group. You cannot vote for your own group.</p>
     <div class="groups" id="vote"></div>
     <p class="sendmsg" id="votemsg" role="status"></p>
   </section>
