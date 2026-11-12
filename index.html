@@ -229,7 +229,7 @@ tr:last-child td{border-bottom:0}
 .qa{display:flex;flex-direction:column;gap:10px}
 .qa input[type=text]{font:500 16px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;width:100%;box-sizing:border-box;min-width:0}
 .qa label,.qa>span{font-weight:600}
-.qa .fill-in{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.qa .fill-in span{font-weight:600;white-space:nowrap}.qa .fill-in input{flex:1 1 160px}
+.qa .fill-in{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.qa .fill-in span,.qa .fill-in label{font-weight:600;white-space:nowrap}.qa .fill-in input{flex:1 1 160px}
 .yn{display:flex;gap:8px}.yn button{min-width:84px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:700 16px var(--body);cursor:pointer}
 .yn button[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);color:var(--surface)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
@@ -306,12 +306,11 @@ tr:last-child td{border-bottom:0}
     <div class="step"><b>Step 4</b><h2>Answer as a group</h2></div>
     <p class="hint">Talk with your group, write your answers, and send them. They show on the class screen.</p>
     <div class="card qa">
-      <label for="a-why"><b>1.</b> Why did you choose these percentages? <span class="hint">(one sentence)</span></label>
-      <input type="text" id="a-why" maxlength="140" placeholder="We chose these because…" autocomplete="off">
+      <span><b>1.</b> What was your top priority, and why?</span>
+      <div class="fill-in"><label for="a-top">Our top priority is</label><input type="text" id="a-top" maxlength="60" placeholder="e.g. teamwork" autocomplete="off"></div>
+      <div class="fill-in"><label for="a-why">because</label><input type="text" id="a-why" maxlength="140" placeholder="e.g. helping each other matters" autocomplete="off"></div>
       <span><b>2.</b> Did your #1 and #2 turn out the way you expected? <span class="hint" id="a-top2"></span></span>
       <div class="yn" id="a-exp"><button type="button" data-x="Yes" aria-pressed="false">Yes</button><button type="button" data-x="No" aria-pressed="false">No</button></div>
-      <label for="a-top"><b>3.</b> What was your top priority?</label>
-      <div class="fill-in"><span>Our top priority is</span><input type="text" id="a-top" maxlength="60" placeholder="___" autocomplete="off"></div>
     </div>
     <p class="leader-note">👤 <strong>Group leader only:</strong> one person per group taps Send.</p>
     <button class="btn primary big" id="asend">Send Group 1’s answers</button>
@@ -419,7 +418,7 @@ aExp.onclick=e=>{const b=e.target.closest("button[data-x]");if(!b)return;ans.exp
 document.getElementById("asend").onclick=async()=>{
   const b=document.getElementById("asend"),m=document.getElementById("amsg");
   const why=aWhy.value.trim(),top=aTop.value.trim();
-  if(!why||!ans.exp||!top){m.className="sendmsg no";m.textContent="Please answer all 3 questions first.";return}
+  if(!why||!ans.exp||!top){m.className="sendmsg no";m.textContent="Please answer both questions first.";return}
   b.disabled=true;m.className="sendmsg";m.textContent="Sending…";
   try{
     const r=await fetch(NTFY,{method:"POST",body:JSON.stringify({type:"answer",g:my.g,why,exp:ans.exp,top})});
